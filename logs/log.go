@@ -47,7 +47,7 @@ import (
 
 // RFC5424 log message levels.
 const (
-	LevelEmergency     = iota
+	LevelEmergency = iota
 	LevelAlert
 	LevelCritical
 	LevelError
@@ -248,17 +248,17 @@ func (bl *BeeLogger) Write(p []byte) (n int, err error) {
 	}
 	// writeMsg will always add a '\n' character
 	if p[len(p)-1] == '\n' {
-		p = p[0: len(p)-1]
+		p = p[0 : len(p)-1]
 	}
 	// set levelLoggerImpl to ensure all log message will be write out
-	err = bl.writeMsg(levelLoggerImpl, string(p))
+	err = bl.writeMsg(1, levelLoggerImpl, string(p))
 	if err == nil {
 		return len(p), err
 	}
 	return 0, err
 }
 
-func (bl *BeeLogger) writeMsg(logLevel int, msg string, v ...interface{}) error {
+func (bl *BeeLogger) writeMsg(depthOffset uint, logLevel int, msg string, v ...interface{}) error {
 	if !bl.init {
 		bl.lock.Lock()
 		bl.setLogger(AdapterConsole)
@@ -273,7 +273,7 @@ func (bl *BeeLogger) writeMsg(logLevel int, msg string, v ...interface{}) error 
 
 	when := time.Now()
 	if bl.enableFuncCallDepth {
-		_, file, line, ok := runtime.Caller(bl.loggerFuncCallDepth)
+		_, file, line, ok := runtime.Caller(int(1 + depthOffset))
 		if !ok {
 			file = "???"
 			line = 0
@@ -362,94 +362,94 @@ func (bl *BeeLogger) startLogger() {
 }
 
 // Emergency Log EMERGENCY level message.
-func (bl *BeeLogger) Emergency(format string, v ...interface{}) {
+func (bl *BeeLogger) Emergency(depthOffset uint, format string, v ...interface{}) {
 	if LevelEmergency > bl.level {
 		return
 	}
-	bl.writeMsg(LevelEmergency, format, v...)
+	bl.writeMsg(1+depthOffset, LevelEmergency, format, v...)
 }
 
 // Alert Log ALERT level message.
-func (bl *BeeLogger) Alert(format string, v ...interface{}) {
+func (bl *BeeLogger) Alert(depthOffset uint, format string, v ...interface{}) {
 	if LevelAlert > bl.level {
 		return
 	}
-	bl.writeMsg(LevelAlert, format, v...)
+	bl.writeMsg(1+depthOffset, LevelAlert, format, v...)
 }
 
 // Critical Log CRITICAL level message.
-func (bl *BeeLogger) Critical(format string, v ...interface{}) {
+func (bl *BeeLogger) Critical(depthOffset uint, format string, v ...interface{}) {
 	if LevelCritical > bl.level {
 		return
 	}
-	bl.writeMsg(LevelCritical, format, v...)
+	bl.writeMsg(1+depthOffset, LevelCritical, format, v...)
 }
 
 // Error Log ERROR level message.
-func (bl *BeeLogger) Error(format string, v ...interface{}) {
+func (bl *BeeLogger) Error(depthOffset uint, format string, v ...interface{}) {
 	if LevelError > bl.level {
 		return
 	}
-	bl.writeMsg(LevelError, format, v...)
+	bl.writeMsg(1+depthOffset, LevelError, format, v...)
 }
 
 // Warning Log WARNING level message.
-func (bl *BeeLogger) Warning(format string, v ...interface{}) {
+func (bl *BeeLogger) Warning(depthOffset uint, format string, v ...interface{}) {
 	if LevelWarn > bl.level {
 		return
 	}
-	bl.writeMsg(LevelWarn, format, v...)
+	bl.writeMsg(1+depthOffset, LevelWarn, format, v...)
 }
 
 // Notice Log NOTICE level message.
-func (bl *BeeLogger) Notice(format string, v ...interface{}) {
+func (bl *BeeLogger) Notice(depthOffset uint, format string, v ...interface{}) {
 	if LevelNotice > bl.level {
 		return
 	}
-	bl.writeMsg(LevelNotice, format, v...)
+	bl.writeMsg(1+depthOffset, LevelNotice, format, v...)
 }
 
 // Informational Log INFORMATIONAL level message.
-func (bl *BeeLogger) Informational(format string, v ...interface{}) {
+func (bl *BeeLogger) Informational(depthOffset uint, format string, v ...interface{}) {
 	if LevelInfo > bl.level {
 		return
 	}
-	bl.writeMsg(LevelInfo, format, v...)
+	bl.writeMsg(1+depthOffset, LevelInfo, format, v...)
 }
 
 // Debug Log DEBUG level message.
-func (bl *BeeLogger) Debug(format string, v ...interface{}) {
+func (bl *BeeLogger) Debug(depthOffset uint, format string, v ...interface{}) {
 	if LevelDebug > bl.level {
 		return
 	}
-	bl.writeMsg(LevelDebug, format, v...)
+	bl.writeMsg(1+depthOffset, LevelDebug, format, v...)
 }
 
 // Warn Log WARN level message.
 // compatibility alias for Warning()
-func (bl *BeeLogger) Warn(format string, v ...interface{}) {
+func (bl *BeeLogger) Warn(depthOffset uint, format string, v ...interface{}) {
 	if LevelWarn > bl.level {
 		return
 	}
-	bl.writeMsg(LevelWarn, format, v...)
+	bl.writeMsg(1+depthOffset, LevelWarn, format, v...)
 }
 
 // Info Log INFO level message.
 // compatibility alias for Informational()
-func (bl *BeeLogger) Info(format string, v ...interface{}) {
+func (bl *BeeLogger) Info(depthOffset uint, format string, v ...interface{}) {
 	if LevelInfo > bl.level {
 		return
 	}
-	bl.writeMsg(LevelInfo, format, v...)
+	bl.writeMsg(1+depthOffset, LevelInfo, format, v...)
 }
 
 // Trace Log TRACE level message.
 // compatibility alias for Debug()
-func (bl *BeeLogger) Trace(format string, v ...interface{}) {
+func (bl *BeeLogger) Trace(depthOffset uint, format string, v ...interface{}) {
 	if LevelDebug > bl.level {
 		return
 	}
-	bl.writeMsg(LevelDebug, format, v...)
+	bl.writeMsg(1+depthOffset, LevelDebug, format, v...)
 }
 
 // Flush flush all chan data.
@@ -586,58 +586,58 @@ func SetLogger(adapter string, config ...string) error {
 
 // Emergency logs a message at emergency level.
 func Emergency(f interface{}, v ...interface{}) {
-	beeLogger.Emergency(formatLog(f, v...))
+	beeLogger.Emergency(1, formatLog(f, v...))
 }
 
 // Alert logs a message at alert level.
 func Alert(f interface{}, v ...interface{}) {
-	beeLogger.Alert(formatLog(f, v...))
+	beeLogger.Alert(1, formatLog(f, v...))
 }
 
 // Critical logs a message at critical level.
 func Critical(f interface{}, v ...interface{}) {
-	beeLogger.Critical(formatLog(f, v...))
+	beeLogger.Critical(1, formatLog(f, v...))
 }
 
 // Error logs a message at error level.
 func Error(f interface{}, v ...interface{}) {
-	beeLogger.Error(formatLog(f, v...))
+	beeLogger.Error(1, formatLog(f, v...))
 }
 
 // Warning logs a message at warning level.
 func Warning(f interface{}, v ...interface{}) {
-	beeLogger.Warn(formatLog(f, v...))
+	beeLogger.Warn(1, formatLog(f, v...))
 }
 
 // Warn compatibility alias for Warning()
 func Warn(f interface{}, v ...interface{}) {
-	beeLogger.Warn(formatLog(f, v...))
+	beeLogger.Warn(1, formatLog(f, v...))
 }
 
 // Notice logs a message at notice level.
 func Notice(f interface{}, v ...interface{}) {
-	beeLogger.Notice(formatLog(f, v...))
+	beeLogger.Notice(1, formatLog(f, v...))
 }
 
 // Informational logs a message at info level.
 func Informational(f interface{}, v ...interface{}) {
-	beeLogger.Info(formatLog(f, v...))
+	beeLogger.Info(1, formatLog(f, v...))
 }
 
 // Info compatibility alias for Warning()
 func Info(f interface{}, v ...interface{}) {
-	beeLogger.Info(formatLog(f, v...))
+	beeLogger.Info(1, formatLog(f, v...))
 }
 
 // Debug logs a message at debug level.
 func Debug(f interface{}, v ...interface{}) {
-	beeLogger.Debug(formatLog(f, v...))
+	beeLogger.Debug(1, formatLog(f, v...))
 }
 
 // Trace logs a message at trace level.
 // compatibility alias for Warning()
 func Trace(f interface{}, v ...interface{}) {
-	beeLogger.Trace(formatLog(f, v...))
+	beeLogger.Trace(1, formatLog(f, v...))
 }
 
 func formatLog(f interface{}, v ...interface{}) string {
